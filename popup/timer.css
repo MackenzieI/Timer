@@ -1,0 +1,64 @@
+html,
+body {
+  width: 200px;
+}
+
+button {
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1em;
+  background-color: #e5f2f2;
+  width: 30%;
+}
+
+.timer-buttons {
+    display: flex;
+    padding: 2px;
+    gap: 10px;
+}
+  
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%; 
+    background-color: black;
+}
+
+.settings_button { 
+    margin-right: 0.2em;
+    margin-top: 0.2em;
+    padding: 2px;
+    margin-left: auto;
+}
+
+.header {
+    display: flex;
+    justify-content: flex-end; 
+}
+
+.clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+}
+
+button:hover {
+  background-color: #cff2f2;
+}
+
+button[type="reset"] {
+  background-color: #fbfbc9;
+}
+
+button[type="reset"]:hover {
+  background-color: #eaea9d;
+}
+
+p {
+    font-size: 2em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: darkgreen;
+}
