@@ -46,7 +46,10 @@ function countDown() {
  */
 function Pause() {
     clearInterval(timerInterval);
-    clock.innerHTML = formatTime(selectedTimeHours, selectedTimeMinutes, selectedTimeSeconds); 
+    selectedTimeHours = selectedTimeHours;
+    selectedTimeMinutes = selectedTimeMinutes;
+    selectedTimeSeconds = selectedTimeSeconds;
+    setTimer();
 }
 
 /**
@@ -54,7 +57,10 @@ function Pause() {
  */
 function Stop() {
     clearInterval(timerInterval);
-    clock.innerHTML = "00:00:00"; 
+    selectedTimeHours = 0; 
+    selectedTimeMinutes = 0; 
+    selectedTimeSeconds = 0; 
+    setTimer(); 
 }
 
 /**
@@ -77,5 +83,14 @@ function formatTime(hours, minutes, seconds) {
     } 
     return time;
 }
+
+// Create variables for the buttons and then 
+// add their corresponding event listeners to them
+var start_btn = document.getElementById("start-btn");
+var pause_btn = document.getElementById("pause-btn");
+var stop_btn = document.getElementById("stop-btn");
+start_btn.addEventListener("click", countDown); 
+pause_btn.addEventListener("click", Pause);
+stop_btn.addEventListener("click", Stop);
 
 setTimer();
