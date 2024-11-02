@@ -1,3 +1,10 @@
+:root {
+  --clock-color: black; 
+  --timer-color: darkgreen; 
+  --button-pricolor: #e5f2f2; 
+  --button-seccolor: #cff2f2; 
+}
+
 * {
   margin: 0;
 }
@@ -12,7 +19,7 @@ button {
   text-align: center;
   cursor: pointer;
   font-size: 1em;
-  background-color: #e5f2f2;
+  background-color: var(--button-pricolor);
   width: 30%;
 }
 
@@ -27,7 +34,7 @@ button {
   display: flex;
   flex-direction: column;
   width: 100%; 
-  background-color: black;
+  background-color: var(--clock-color);
 }
 
 .settings_button { 
@@ -49,15 +56,7 @@ button {
 }
 
 button:hover {
-  background-color: #cff2f2;
-}
-
-button[type="reset"] {
-  background-color: #fbfbc9;
-}
-
-button[type="reset"]:hover {
-  background-color: #eaea9d;
+  background-color: var(--button-seccolor);
 }
 
 p {
@@ -66,7 +65,7 @@ p {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: darkgreen;
+  background-color: var(--timer-color);
   margin-left: 1em;
-  width: 69%
+  width: 69%; 
 }
