@@ -8,24 +8,16 @@
 <body>
     <div class="container" id="container">
         <div class="header">
-            <button ><i id="settings_button" style="font-size:24px" class="fa">&#xf013;</i></button>
+            <button><i id="settings_button" style="font-size:24px" class="fa">&#xf013;</i></button>
         </div>
         <div id="clock">
-            <section class="arrows">
-                <div class="arrow" id="hour-arrow"></div>
-                <div class="arrow" id="min-arrow"></div>
-                <div class="arrow" id="sec-arrow"></div>
-            </section>
-            <p id="time">00:00:00</p>
-            <section class="arrows">
-                <div class="arrow" id="hour-arrow"></div>
-                <div class="arrow" id="min-arrow"></div>
-                <div class="arrow" id="sec-arrow"></div>
-            </section>
+            <p class="timer" id="time" contenteditable="true" placeholder="hh:mm:ss">
+                00:00:00
+            </p>
             <div id="timer-buttons" class="timer-buttons"> 
                 <button id="start-btn">Start</button>
                 <button id="pause-btn">Pause</button>
-                <button id="stop-btn")>Clear</button>
+                <button id="stop-btn">Clear</button>
             </div>
         </div>
     </div>
