@@ -1,6 +1,9 @@
-var selectedTimeHours = 0; 
-var selectedTimeMinutes = 0; 
-var selectedTimeSeconds = 0; 
+var selectedTimeHours; 
+var selectedTimeMinutes; 
+var selectedTimeSeconds; 
+if (selectedTimeHours == null) {selectedTimeHours = 0};
+if (selectedTimeMinutes == null) {selectedTimeMinutes = 0};
+if (selectedTimeSeconds == null) {selectedTimeSeconds = 0};
 var clock = document.getElementById("time"); // Define the clock globally to quickly access it
 var timerInterval; 
 
@@ -60,6 +63,7 @@ function countDown() {
             selectedTimeSeconds--;
         }
         clock.innerHTML = formatTime(selectedTimeHours, selectedTimeMinutes, selectedTimeSeconds);
+        saveTimerValue(); 
     }
     timerInterval = setInterval(updateClock, 1000); 
 }
@@ -72,6 +76,7 @@ function Pause() {
     selectedTimeHours = selectedTimeHours;
     selectedTimeMinutes = selectedTimeMinutes;
     selectedTimeSeconds = selectedTimeSeconds;
+    saveTimerValue(); 
     setTimer();
 }
 
@@ -84,6 +89,7 @@ function Stop() {
     selectedTimeMinutes = 0; 
     selectedTimeSeconds = 0; 
     setTimer(); 
+    saveTimerValue(); 
 }
 
 /**
@@ -128,4 +134,33 @@ stop_btn.addEventListener("click", function() {
     }
 }); 
 
-setTimer();
+document.addEventListener('DOMContentLoaded', function() {
+    loadTimerValue();
+});
+
+/**
+ * Saves the current timer value to browser storage
+ */
+function saveTimerValue() {
+    const time = clock.innerHTML.trim();
+    browser.storage.sync.set({ timerValue: time }).then(() => {
+        console.log('Timer value saved:', time);
+    }).catch((error) => {
+        console.error('Error saving timer value:', error);
+    });
+}
+
+/**
+ * Load the saved timer value from browser storage
+ */
+function loadTimerValue() {
+    browser.storage.sync.get('timerValue').then((result) => {
+        if (result.timerValue) {
+            console.log('Loaded timer value:', result.timerValue);
+            clock.innerHTML = result.timerValue;
+            parseTimeInput();
+        }
+    }).catch((error) => {
+        console.error('Error loading timer value:', error);
+    });
+}
