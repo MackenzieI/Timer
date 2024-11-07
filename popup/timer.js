@@ -1,20 +1,60 @@
-var selectedTimeHours; 
-var selectedTimeMinutes; 
-var selectedTimeSeconds; 
-if (selectedTimeHours == null) {selectedTimeHours = 0};
-if (selectedTimeMinutes == null) {selectedTimeMinutes = 0};
-if (selectedTimeSeconds == null) {selectedTimeSeconds = 0};
-var clock = document.getElementById("time"); // Define the clock globally to quickly access it
-var timerInterval; 
+var selectedTimeHours = 0;
+var selectedTimeMinutes = 0;
+var selectedTimeSeconds = 0;
+var timerInterval = null;
+var popupPort = null; 
 
 /**
- * Inserts the time into the HTML element with ID "time"
+ * Initializes the timer state from local storage
  */
-function setTimer() {
-    let time = formatTime(selectedTimeHours, selectedTimeMinutes, selectedTimeSeconds);
-
-    clock.innerHTML = time;
+function loadTimerState() {
+    browser.storage.local.get(['selectedTimeHours', 'selectedTimeMinutes', 'selectedTimeSeconds'])
+        .then(result => {
+            selectedTimeHours = result.selectedTimeHours || 0;
+            selectedTimeMinutes = result.selectedTimeMinutes || 0;
+            selectedTimeSeconds = result.selectedTimeSeconds || 0;
+            sendTimerUpdateToPopup(); 
+        })
+        .catch(error => console.error('Error loading timer state:', error));
 }
+
+/**
+ * Checks if popup is open then sends timer state to the popup
+ */
+function sendTimerUpdateToPopup() {
+    if (popupPort) {
+        popupPort.postMessage({
+            action: 'updateTimer',
+            hours: selectedTimeHours,
+            minutes: selectedTimeMinutes,
+            seconds: selectedTimeSeconds            
+        }); 
+    } else {
+        browser.storage.local.set({
+            selectedTimeHours,
+            selectedTimeMinutes,
+            selectedTimeSeconds
+        }).then(() => {
+            console.log('Timer state saved for popup to read later');
+        }).catch((error) => {
+            console.log('Error saving state when popup not open', error);
+        });
+    }
+}
+
+browser.runtime.onConnect.addListener((port) => {
+    if (port.name === "popup") {
+        console.log("Popup connected!");
+        popupPort = port; 
+
+        popupPort.onDisconnect.addListener(() => {
+            console.log("Popup disconnected");
+            popupPort = null; 
+        });
+
+        sendTimerUpdateToPopup(); 
+    }
+});
 
 /**
  * Parses the time from the clock's innerHTML
@@ -39,16 +79,20 @@ function parseTimeInput() {
 }
 
 /**
- * Clock counts down when user clicks start 
+ * Clears the timerInterval if null, then sets it to the time
+ * Stops the timer if it goes to zero, otherwise it counts down 
+ * Saves the timer state then sends the changes to the popup
  */
-function countDown() {
-    parseTimeInput(); 
+function countdown() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
 
-    function updateClock() {
+    timerInterval = setInterval(() => {
         if (selectedTimeSeconds === 0) {
             if (selectedTimeMinutes === 0) {
                 if (selectedTimeHours === 0) {
-                    Stop();
+                    Stop(); 
                     return;
                 } else {
                     selectedTimeHours--;
@@ -62,10 +106,10 @@ function countDown() {
         } else {
             selectedTimeSeconds--;
         }
-        clock.innerHTML = formatTime(selectedTimeHours, selectedTimeMinutes, selectedTimeSeconds);
-        saveTimerValue(); 
-    }
-    timerInterval = setInterval(updateClock, 1000); 
+
+        saveTimerState();
+        sendTimerUpdateToPopup(); 
+    }, 1000);
 }
 
 /**
@@ -73,94 +117,62 @@ function countDown() {
  */
 function Pause() {
     clearInterval(timerInterval);
-    selectedTimeHours = selectedTimeHours;
-    selectedTimeMinutes = selectedTimeMinutes;
-    selectedTimeSeconds = selectedTimeSeconds;
-    saveTimerValue(); 
-    setTimer();
+    sendTimerUpdateToPopup();  
 }
 
 /**
- * Stops and clears the timer 
+ * Clears interval and stops the timer
  */
 function Stop() {
     clearInterval(timerInterval);
-    selectedTimeHours = 0; 
-    selectedTimeMinutes = 0; 
-    selectedTimeSeconds = 0; 
-    setTimer(); 
-    saveTimerValue(); 
+    resetTimerState();
+    sendTimerUpdateToPopup();
 }
 
 /**
- * Formats the hours and minutes into clock format.
- * @param {Number} hours 
- * @param {Number} minutes 
- * @param {Number} seconds
+ * Sets hours, minutes, and seconds to 0 
  */
-function formatTime(hours, minutes, seconds) {
-    let time = "";
-    if (hours > 9) {
-        time = hours + ":"  + (minutes < 10 ? "0" : "") + minutes; // Simplifies nested if-else case
-        time += ":";
-        time += (seconds < 10 ? '0' : '') + seconds; 
-    } else {
-        time = "0" + hours + ":";
-        time += (minutes < 10 ? "0" : "") + minutes; // Simplifies nested if-else case
-        time += ":";
-        time += (seconds < 10 ? '0' : '') + seconds; 
-    } 
-    return time;
+function resetTimerState() {
+    selectedTimeHours = 0;
+    selectedTimeMinutes = 0;
+    selectedTimeSeconds = 0;
+    saveTimerState();
 }
 
-// Create variables for the buttons and then 
-// add their corresponding event listeners to them
-var start_btn = document.getElementById("start-btn");
-var pause_btn = document.getElementById("pause-btn");
-var stop_btn = document.getElementById("stop-btn");
-start_btn.addEventListener("click", function() {
-    if(parseTimeInput()) {
-        countDown(); 
-    }
-}); 
-pause_btn.addEventListener("click", function() {
-    if(parseTimeInput()) {
-        Pause(); 
-    }
-}); 
-stop_btn.addEventListener("click", function() {
-    if(parseTimeInput()) {
-        Stop(); 
-    }
-}); 
+/**
+ * Sets hours, minutes, and seconds to their values in local storage
+ */
+function saveTimerState() {
+    browser.storage.local.set({
+        selectedTimeHours,
+        selectedTimeMinutes,
+        selectedTimeSeconds
+    }).then(() => {
+        console.log('Timer state saved:', selectedTimeHours, selectedTimeMinutes, selectedTimeSeconds)
+    }).catch(error => {
+        console.error('Error saving timer state:', error)
+    });
+}
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadTimerValue();
+browser.runtime.onMessage.addListener((msg) => {
+    console.log('Received action:', msg.action);
+    switch (msg.action) {
+        case 'start':
+            if (message.time) {
+                selectedTimeHours = msg.time.hours;
+                selectedTimeMinutes = msg.time.minutes;
+                selectedTimeSeconds = msg.time.seconds;
+            }
+            console.log(`Starting timer with: ${selectedTimeHours}:${selectedTimeMinutes}:${selectedTimeSeconds}`);
+            countdown();
+            break;
+        case 'pause':
+            Pause();
+            break;
+        case 'stop':
+            Stop();
+            break;
+    }
 });
 
-/**
- * Saves the current timer value to browser storage
- */
-function saveTimerValue() {
-    const time = clock.innerHTML.trim();
-    browser.storage.sync.set({ timerValue: time }).then(() => {
-        console.log('Timer value saved:', time);
-    }).catch((error) => {
-        console.error('Error saving timer value:', error);
-    });
-}
-
-/**
- * Load the saved timer value from browser storage
- */
-function loadTimerValue() {
-    browser.storage.sync.get('timerValue').then((result) => {
-        if (result.timerValue) {
-            console.log('Loaded timer value:', result.timerValue);
-            clock.innerHTML = result.timerValue;
-            parseTimeInput();
-        }
-    }).catch((error) => {
-        console.error('Error loading timer value:', error);
-    });
-}
+loadTimerState();
