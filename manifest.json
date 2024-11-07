@@ -1,24 +1,24 @@
 {
-  "manifest_version": 2,
-  "name": "inbrowserTimer",
-  "version": "1.0.1",
-  "description": "Adds a timer popup.",
-  
-  "icons": {
-      "48": "icons/timer-48.png"
-  },
-  
-  "permissions": ["activeTab", "storage"],
-  
-  "browser_action": {
-      "default_icon": "icons/timer-32.png",
-      "default_title": "Timer",
-      "default_popup": "popup/timer.html"
-  },
-  
-  "browser_specific_settings": {
-      "gecko": {
-          "id": "inbrowserTimer@example.com"
-      }
-  }
+    "manifest_version": 2,
+    "name": "inbrowserTimer",
+    "version": "1.0.2",
+    "description": "Adds a timer popup.",
+    "icons": {
+        "48": "icons/timer-48.png"
+    },
+    "permissions": ["activeTab", "storage", "tabs"],
+    "background": {
+        "scripts": ["timer-background.js"],
+        "persistent": true
+    },
+    "browser_action": {
+        "default_icon": "icons/timer-32.png",
+        "default_title": "Timer",
+        "default_popup": "popup/timer.html"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "inbrowserTimer@example.com"
+        }
+    }
 }
